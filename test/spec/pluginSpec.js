@@ -85,8 +85,16 @@ function preprocess(bundle, testFiles, done) {
   });
 }
 
-function expectedBundle(filename) {
-  return 'require("' + escape(path.relative('', filename)) + '");';
+function extractBundledFiles(bundle) {
+  return unpack(bundle.bundled).map(function (row) { return row.id; });
+}
+
+function expectedExport(filename) {
+  return '/' + escape(path.relative('', filename));
+}
+
+function expectedStub(filename) {
+  return 'require("' + expectedExport(filename) + '");';
 }
 
 
@@ -264,14 +272,14 @@ describe('bro', function() {
 
         // then
         // bundle got created
-        var bundledFiles = unpack(bundleFile.bundled)
-          .map(function (row) { return row.id; });
-        expect(bundledFiles).to.contain(path.relative('', 'test/fixtures/c.js'));
-        expect(bundledFiles).to.contain(path.relative('', 'test/fixtures/b.js'));
+        var bundledFiles = extractBundledFiles(bundleFile);
+
+        expect(bundledFiles).to.contain(expectedExport('test/fixtures/c.js'));
+        expect(bundledFiles).to.contain(expectedExport('test/fixtures/b.js'));
 
         // test file stub got created
-        expect(testFileB.bundled).to.eql(expectedBundle('test/fixtures/b.js'));
-        expect(testFileC.bundled).to.eql(expectedBundle('test/fixtures/c.js'));
+        expect(testFileB.bundled).to.eql(expectedStub('test/fixtures/b.js'));
+        expect(testFileC.bundled).to.eql(expectedStub('test/fixtures/c.js'));
 
         done();
       });
@@ -296,12 +304,12 @@ describe('bro', function() {
           // then
 
           // bundle got passed through
-          var bundledFiles = unpack(bundleFile.bundled)
-            .map(function (row) { return row.id; });
-          expect(bundledFiles).to.contain(path.relative('', 'test/fixtures/b.js'));
+          var bundledFiles = extractBundledFiles(bundleFile);
+
+          expect(bundledFiles).to.contain(expectedExport('test/fixtures/b.js'));
 
           // test file got regenerated
-          expect(testFile.bundled).to.eql(expectedBundle('test/fixtures/b.js'));
+          expect(testFile.bundled).to.eql(expectedStub('test/fixtures/b.js'));
 
           done();
         });
@@ -381,7 +389,7 @@ describe('bro', function() {
           expect(bundleFile.bundled.message).to.eql('Unexpected token');
 
           // test file stub got created anyway
-          expect(testFile.bundled).to.eql(expectedBundle('test/fixtures/error.js'));
+          expect(testFile.bundled).to.eql(expectedStub('test/fixtures/error.js'));
 
           done();
         });
@@ -547,6 +555,7 @@ describe('bro', function() {
         // then
         // bundle got created
         expect(bundleFile.bundled).to.exist;
+
         done();
       });
     });
