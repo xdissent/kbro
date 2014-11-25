@@ -90,7 +90,7 @@ function extractBundledFiles(bundle) {
 }
 
 function expectedExport(filename) {
-  return '/' + escape(path.relative('', filename));
+  return escape(path.resolve(filename));
 }
 
 function expectedStub(filename) {
@@ -435,7 +435,7 @@ describe('bro', function() {
       // TODO(Nikku): Yup, aint gonna work on travis CI :-(
       if (!process.env.TRAVIS) {
 
-        it('should handle file remove', function(done) {
+        it.only('should handle file remove', function(done) {
 
           // given
           var plugin = createPlugin({ autoWatch: true });
@@ -454,12 +454,18 @@ describe('bro', function() {
             // remove file
             delay(function() {
               bFile.remove();
-            });
+            }, 100);
+
+            delay(function() {
+              expect(function() {
+                fs.readFileSync(__dirname + '/../fixtures/b.js', 'utf8');
+              }).to.throw;
+            }, 1000);
 
             // update a bundled file
             delay(function() {
               aFile.update('module.exports = "UPDATED";');
-            }, 500);
+            }, 3000);
 
             // give watch a chance to trigger
             delay(function() {
@@ -470,7 +476,7 @@ describe('bro', function() {
 
               expect(bundleFile.realContents()).not.to.contain('/b.js');
               done();
-            }, 3000);
+            }, 5000);
 
           });
 
