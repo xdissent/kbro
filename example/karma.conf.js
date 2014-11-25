@@ -7,8 +7,8 @@ module.exports = function(karma) {
 
     files: [
       'vendor/external.js',
-      // source file, accidently included
-      // (there is usually no reason to do this)
+      // common-js source file, accidently included
+      // (there is usually no reason to do this. We should not fail though if you try ;-)
       'lib/a.js',
       'test/**/*Spec.js'
     ],
@@ -16,6 +16,8 @@ module.exports = function(karma) {
     reporters: [ 'dots' ],
 
     preprocessors: {
+      // common-js source file, accidently included
+      // (there is usually no reason to do this. We should not fail though if you try ;-)
       'lib/*.js': [ 'browserify' ],
       'test/**/*Spec.js': [ 'browserify' ]
     },
